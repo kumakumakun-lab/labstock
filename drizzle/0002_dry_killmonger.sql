@@ -1,0 +1,1 @@
+ALTER TABLE `group_items` MODIFY COLUMN `tags` json;
