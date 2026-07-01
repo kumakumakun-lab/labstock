@@ -1,0 +1,22 @@
+name: Supabase keep-alive
+
+# 無料プランの Supabase プロジェクトは 7 日間アクセスが無いと自動休止する。
+# グループ共有機能が止まらないよう、定期的に軽い RPC を叩いて起こしておく。
+
+on:
+  schedule:
+    - cron: "0 3 */2 * *" # 2日おき（UTC 3:00）に実行
+  workflow_dispatch: {} # 手動実行も可能
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase RPC
+        run: |
+          curl -sS -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/get_my_groups" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"p_device_id":"00000000-0000-4000-8000-000000000000"}' \
+            -o /dev/null -w "keep-alive HTTP %{http_code}\n" --fail
